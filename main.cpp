@@ -2,6 +2,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <algorithm>
 
 #include "lib/pugixml/pugixml.hpp"
 #include <assert.h>
@@ -9,10 +10,11 @@
 using namespace std;
 
 struct BlastResult {
-
+    double a_score;
 };
 
-BlastResult parseBlastOutput(pugi::xml_node node);
+BlastResult parseBlastOutput(const pugi::xpath_node &node);
+double calculateAScore(const BlastResult &br);
 
 int main(int argc, char *argv[])
 {
@@ -30,16 +32,27 @@ int main(int argc, char *argv[])
     }
 
     auto nodes = doc.select_nodes("//BlastOutput/BlastOutput_iterations/Iteration");
+
+    // Parse the Iteration nodes
     std::vector<BlastResult> results;
     results.reserve(nodes.size());
+    std::transform(nodes.begin(), nodes.end(),
+                   results.begin(), parseBlastOutput);
 
-    for (auto n : nodes) {
-        std::cout << n.node().name() << std::endl;
-    }
+    // Calculate A Score from Blast Results
+    std::for_each(results.begin(), results.end(),
+                  [](BlastResult &br){
+        br.a_score = calculateAScore(br);
+    });
+
 
     return 0;
 }
 
-BlastResult parseBlastOutput(pugi::xml_node node) {
+BlastResult parseBlastOutput(const pugi::xpath_node &node) {
     return {};
+}
+
+double calculateAScore(const BlastResult &br) {
+    return 7;
 }
