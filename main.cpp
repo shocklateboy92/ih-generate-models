@@ -13,6 +13,10 @@ struct BlastResult {
     double a_score;
 };
 
+struct RunConfig {
+
+};
+
 BlastResult parseBlastOutput(const pugi::xpath_node &node);
 double calculateAScore(const BlastResult &br);
 

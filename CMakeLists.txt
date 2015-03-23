@@ -9,6 +9,8 @@ set(SOURCE_FILES
 
 set(EXTERNAL_SOURCE_FILES
     lib/pugixml/pugixml.cpp
+    lib/fastareader/fastareader.cpp
+    lib/fastareader/abstractcharsequence.cpp
     )
 add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${EXTERNAL_SOURCE_FILES})
 

@@ -1,0 +1,1 @@
+Taken shamelessly from https://code.google.com/p/variationtoolkit/source/browse/trunk/src
