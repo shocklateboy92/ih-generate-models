@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include "lib/pugixml/pugixml.hpp"
+#include "lib/fastareader/fastareader.h"
 #include <assert.h>
 
 using namespace std;
@@ -14,11 +15,15 @@ struct BlastResult {
 };
 
 struct RunConfig {
-
+    std::vector<FastaSequence> j_repo;
+    std::vector<FastaSequence> d_repo;
 };
 
 BlastResult parseBlastOutput(const pugi::xpath_node &node);
 double calculateAScore(const BlastResult &br);
+RunConfig prepareConfig(int argc, char *pString[]);
+
+std::vector<FastaSequence> readRepertoire(const char*);
 
 int main(int argc, char *argv[])
 {
@@ -49,8 +54,34 @@ int main(int argc, char *argv[])
         br.a_score = calculateAScore(br);
     });
 
+    RunConfig globalConfig = prepareConfig(argc, argv);
+    assert(globalConfig.j_repo.size() == 15);
+    for (auto &a : globalConfig.d_repo) {
+        std::cout << a.name()  << "\t: " << a.c_str() << std::endl;
+    }
 
     return 0;
+}
+
+RunConfig prepareConfig(int argc, char *argv[]) {
+    return {
+            readRepertoire("IGHJRepertoire.fasta"),
+            readRepertoire("IGHDRepertoire.fasta")
+    };
+}
+
+std::vector<FastaSequence> readRepertoire(const char *repo_path) {
+    std::vector<FastaSequence> ret;
+    FastaReader fr;
+    std::ifstream is(repo_path);
+    assert(is.is_open());
+
+    while (!is.eof()) {
+        auto seq = fr.next(is);
+        ret.push_back(*seq.get());
+    }
+
+    return ret;
 }
 
 BlastResult parseBlastOutput(const pugi::xpath_node &node) {

@@ -38,7 +38,7 @@ class FastaReader
 		~FastaReader();
 		FastaReader& reserve(int32_t len);
 		FastaReader& toupper(bool choice);
-		std::auto_ptr<FastaSequence> next(std::istream& in);
+        std::unique_ptr<FastaSequence> next(std::istream& in);
 	};
 
 #endif
