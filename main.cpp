@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <string>
 #include <algorithm>
 
 #include "lib/pugixml/pugixml.hpp"
@@ -11,6 +10,8 @@
 using namespace std;
 
 struct BlastResult {
+    std::string v_name;
+
     double a_score;
 };
 
@@ -20,13 +21,16 @@ struct RunConfig {
 };
 
 BlastResult parseBlastOutput(const pugi::xpath_node &node);
+
 double calculateAScore(const BlastResult &br);
+
 RunConfig prepareConfig(int argc, char *pString[]);
 
-std::vector<FastaSequence> readRepertoire(const char*);
+std::vector<FastaSequence> readRepertoire(const char *);
 
-int main(int argc, char *argv[])
-{
+#include "common.h"
+
+int main(int argc, char *argv[]) {
     if (argc != 2) {
         std::cerr << "Incorrect Args!" << std::endl;
         return -2;
@@ -46,19 +50,17 @@ int main(int argc, char *argv[])
     std::vector<BlastResult> results;
     results.reserve(nodes.size());
     std::transform(nodes.begin(), nodes.end(),
-                   results.begin(), parseBlastOutput);
+            results.begin(), parseBlastOutput);
 
     // Calculate A Score from Blast Results
     std::for_each(results.begin(), results.end(),
-                  [](BlastResult &br){
-        br.a_score = calculateAScore(br);
-    });
+            [](BlastResult &br) {
+                br.a_score = calculateAScore(br);
+            });
 
     RunConfig globalConfig = prepareConfig(argc, argv);
     assert(globalConfig.j_repo.size() == 15);
-    for (auto &a : globalConfig.d_repo) {
-        std::cout << a.name()  << "\t: " << a.c_str() << std::endl;
-    }
+
 
     return 0;
 }
@@ -85,7 +87,14 @@ std::vector<FastaSequence> readRepertoire(const char *repo_path) {
 }
 
 BlastResult parseBlastOutput(const pugi::xpath_node &node) {
-    return {};
+    return {
+            // Only considering the most likely V-gene for now
+            node.node()
+                    .child("Iteration_hits")
+                    .child("Hit")
+                    .child("Hit_id")
+                    .value()
+    };
 }
 
 double calculateAScore(const BlastResult &br) {

@@ -1,5 +1,5 @@
 project(ih-generate-models)
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.4)
 
 set (CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "--std=c++14")
 
@@ -12,5 +12,5 @@ set(EXTERNAL_SOURCE_FILES
     lib/fastareader/fastareader.cpp
     lib/fastareader/abstractcharsequence.cpp
     )
-add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${EXTERNAL_SOURCE_FILES})
+add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${EXTERNAL_SOURCE_FILES} common.h model.cpp)
 
