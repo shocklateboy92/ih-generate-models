@@ -29,17 +29,16 @@ struct BlastResult {
     std::string v_name;
     std::string v_string;
     std::size_t v_match_start_index;
-    std::string input_sequence;
 };
 
 struct SequenceInfo {
     std::string seq_name;
     std::string seq_string;
 
-    std::unique_ptr<BlastResult> blast_result;
+    BlastResult blast_result;
     double a_score;
 };
 
-HiddenMarkovModel buildModel(RunConfig config, BlastResult input);
+HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input);
 
 #endif //_IH_GENERATE_MODELS_COMMON_H_

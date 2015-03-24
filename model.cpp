@@ -4,6 +4,8 @@
 
 #include "common.h"
 
-HiddenMarkovModel buildModel(RunConfig config, BlastResult input) {
-
+HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input) {
+    std::cout << input.blast_result.v_name << std::endl;
+    return HiddenMarkovModel();
 }
+

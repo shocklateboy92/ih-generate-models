@@ -22,11 +22,14 @@ int main(int argc, char *argv[]) {
         return -2;
     }
 
+    RunConfig globalConfig = prepareConfig(argc, argv);
+    assert(globalConfig.j_repo.size() == 15);
+
     pugi::xml_document doc;
     std::cerr << "loading " << argv[1] << std::endl;
-    auto result = doc.load_file(argv[1]);
-    if (!result) {
-        std::cerr << result.description() << std::endl;
+    auto xml_parse_result = doc.load_file(argv[1]);
+    if (!xml_parse_result) {
+        std::cerr << xml_parse_result.description() << std::endl;
         return -1;
     }
 
@@ -36,14 +39,13 @@ int main(int argc, char *argv[]) {
     // See: http://stackoverflow.com/questions/4302006/how-to-bind-a-constructor-in-c
 
     // Parse the Iteration nodes
-    std::vector<BlastResult> results;
-    results.reserve(nodes.size());
+    std::vector<BlastResult> results(nodes.size());
     std::transform(nodes.begin(), nodes.end(),
             results.begin(), parseBlastOutput);
 
-    std::vector<SequenceInfo> results2;
+    std::vector<SequenceInfo> results2(results.size());
     std::transform(results.begin(), results.end(),
-    results2.begin(), [](BlastResult result1){
+            results2.begin(), [](BlastResult result1) -> SequenceInfo {
                 return {
                         "name",
                         "data",
@@ -51,10 +53,17 @@ int main(int argc, char *argv[]) {
                         // Calculate A Score from Blast Results
                         calculateAScore(result1)
                 };
-            });
+            }
+    );
 
-    RunConfig globalConfig = prepareConfig(argc, argv);
-    assert(globalConfig.j_repo.size() == 15);
+    std::vector<HiddenMarkovModel> results3(results2.size());
+    std::transform(results2.begin(), results2.end(),
+            results3.begin(), std::bind(
+                    buildModel,
+                    globalConfig,
+                    std::placeholders::_1
+            )
+    );
 
 
     return 0;
@@ -86,7 +95,7 @@ BlastResult parseBlastOutput(const pugi::xpath_node &node) {
     auto hit = node.node().child("Iteration_hits").child("Hit");
     auto hsps = hit.child("Hit_hsps").child("Hsp");
     return {
-            hit.child("Hit_id").value(),
+            hit.child_value("Hit_id"),
             hsps.child_value("Hsp_qseq"),
             std::atol(hsps.child_value("Hsp_query-from"))
     };
