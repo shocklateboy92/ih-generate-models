@@ -14,3 +14,6 @@ set(EXTERNAL_SOURCE_FILES
     )
 add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${EXTERNAL_SOURCE_FILES} common.h model.cpp)
 
+include_directories(${CMAKE_SOURCE_DIR}/lib)
+#target_include_directories(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/lib)
+

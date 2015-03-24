@@ -2,23 +2,11 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
+#include <string>
 
-#include "lib/pugixml/pugixml.hpp"
-#include "lib/fastareader/fastareader.h"
 #include <assert.h>
 
-using namespace std;
-
-struct BlastResult {
-    std::string v_name;
-
-    double a_score;
-};
-
-struct RunConfig {
-    std::vector<FastaSequence> j_repo;
-    std::vector<FastaSequence> d_repo;
-};
+#include "common.h"
 
 BlastResult parseBlastOutput(const pugi::xpath_node &node);
 
@@ -27,8 +15,6 @@ double calculateAScore(const BlastResult &br);
 RunConfig prepareConfig(int argc, char *pString[]);
 
 std::vector<FastaSequence> readRepertoire(const char *);
-
-#include "common.h"
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -40,11 +26,14 @@ int main(int argc, char *argv[]) {
     std::cerr << "loading " << argv[1] << std::endl;
     auto result = doc.load_file(argv[1]);
     if (!result) {
-        std::cerr << result.description() << endl;
+        std::cerr << result.description() << std::endl;
         return -1;
     }
 
     auto nodes = doc.select_nodes("//BlastOutput/BlastOutput_iterations/Iteration");
+
+    //TODO: Replace this with Boost Range Adapters or pimped out std::bind
+    // See: http://stackoverflow.com/questions/4302006/how-to-bind-a-constructor-in-c
 
     // Parse the Iteration nodes
     std::vector<BlastResult> results;
@@ -52,10 +41,16 @@ int main(int argc, char *argv[]) {
     std::transform(nodes.begin(), nodes.end(),
             results.begin(), parseBlastOutput);
 
-    // Calculate A Score from Blast Results
-    std::for_each(results.begin(), results.end(),
-            [](BlastResult &br) {
-                br.a_score = calculateAScore(br);
+    std::vector<SequenceInfo> results2;
+    std::transform(results.begin(), results.end(),
+    results2.begin(), [](BlastResult result1){
+                return {
+                        "name",
+                        "data",
+                        result1,
+                        // Calculate A Score from Blast Results
+                        calculateAScore(result1)
+                };
             });
 
     RunConfig globalConfig = prepareConfig(argc, argv);
@@ -87,13 +82,13 @@ std::vector<FastaSequence> readRepertoire(const char *repo_path) {
 }
 
 BlastResult parseBlastOutput(const pugi::xpath_node &node) {
+    // Only considering the most likely V-gene for now
+    auto hit = node.node().child("Iteration_hits").child("Hit");
+    auto hsps = hit.child("Hit_hsps").child("Hsp");
     return {
-            // Only considering the most likely V-gene for now
-            node.node()
-                    .child("Iteration_hits")
-                    .child("Hit")
-                    .child("Hit_id")
-                    .value()
+            hit.child("Hit_id").value(),
+            hsps.child_value("Hsp_qseq"),
+            std::atol(hsps.child_value("Hsp_query-from"))
     };
 }
 

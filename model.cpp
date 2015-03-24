@@ -4,6 +4,6 @@
 
 #include "common.h"
 
-HiddenMarkovModel buildModel(void) {
+HiddenMarkovModel buildModel(RunConfig config, BlastResult input) {
 
 }
