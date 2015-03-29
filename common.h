@@ -12,7 +12,14 @@
 #include <pugixml/pugixml.hpp>
 #include <fastareader/fastareader.h>
 
+constexpr std::size_t TRACK_LENGTH = 4;
+using emission_probs_t = std::vector<double>;
+const std::array<char, TRACK_LENGTH> TRACK = {'A','G','C','T'};
+using seq_map_t = std::unordered_map<std::string, FastaSequence>;
+
 struct StateInfo {
+    std::string name;
+    emission_probs_t emission_probs;
 };
 
 struct HiddenMarkovModel {
@@ -21,22 +28,22 @@ struct HiddenMarkovModel {
 };
 
 struct RunConfig {
-    std::vector<FastaSequence> j_repo;
-    std::vector<FastaSequence> d_repo;
+    const std::vector<FastaSequence> j_repo;
+    const std::vector<FastaSequence> d_repo;
+    const seq_map_t v_repo;
 };
 
 struct BlastResult {
-    std::string v_name;
-    std::string v_string;
-    std::size_t v_match_start_index;
+    const std::string v_name;
+    const std::string v_string;
 };
 
 struct SequenceInfo {
-    std::string seq_name;
-    std::string seq_string;
+    const std::string seq_name;
+    const std::string seq_string;
 
-    BlastResult blast_result;
-    double a_score;
+    const BlastResult blast_result;
+    const double a_score;
 };
 
 HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input);
