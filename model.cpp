@@ -18,9 +18,10 @@ BlastResult parseBlastOutput(const pugi::xpath_node &node) {
     auto hit = node.node().child("Iteration_hits").child("Hit");
     auto hsps = hit.child("Hit_hsps").child("Hsp");
     return {
-            // The current version of BLAST seems to prepend "lcl|" to Id
-            std::string(hit.child_value("Hit_id")).substr(4),
-            hsps.child_value("Hsp_hseq"),
+        // The current version of BLAST seems to prepend "lcl|" to Id
+        std::string(hit.child_value("Hit_id")).substr(4),
+        hsps.child_value("Hsp_hseq"),
+        std::stoul(hsps.child_value("Hsp_hit-from"))
     };
 }
 
@@ -40,9 +41,13 @@ StateInfo create_v_state(const RunConfig &config, std::size_t index, char v) {
 
 HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input) {
     HiddenMarkovModel ret = {};
+    // Use full V_gene from the repertoire, rather
+    // than just the aligned segment BLAST spits out
     std::string full_v_seq = config.v_repo.at(input.blast_result.v_name).c_str();
-//    std::string full_v_seq = input.blast_result.v_string;
-    auto t = transform(index(full_v_seq, 0), [&config](auto i) {
+    // But we only care about the V sequence from the start of the aligned region
+    std::string fstr = full_v_seq.substr(input.blast_result.v_match_start -1, full_v_seq.length());
+    // Now make a state for each NT in the V-Gene
+    auto t = transform(index(fstr, 0), [&config](auto i) {
         return create_v_state(config, i.index(), i.value());
     });
 

@@ -66,8 +66,13 @@ int main(int argc, char *argv[]) {
 
     std::size_t matches = 0;
     for (const HiddenMarkovModel &model : r3) {
+        std::string token;
+        v_probs >> token;
+        assert("Start_Model" == token);
+        assert(v_probs.good());
         for (auto s : model.states) {
             for (auto p : s.emission_probs) {
+                assert(v_probs.good());
                 double ep;
                 v_probs >> ep;
                 assert(p == std::round(ep));

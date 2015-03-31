@@ -36,6 +36,7 @@ struct RunConfig {
 struct BlastResult {
     const std::string v_name;
     const std::string v_string;
+    const std::size_t v_match_start;
 };
 
 struct SequenceInfo {
