@@ -47,6 +47,10 @@ struct SequenceInfo {
     const double a_score;
 };
 
+struct MutationProbabilites {
+    
+};
+
 HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input);
 
 #endif //_IH_GENERATE_MODELS_COMMON_H_

@@ -29,7 +29,18 @@ double calculateAScore(const BlastResult &br) {
     return 7;
 }
 
+std::string get_penta_nucleotide(std::string seq_string, int nucl_pos) {
+    std::stringstream ss;
+    ss << "uu" << seq_string << "uu";
+    return ss.str().substr(nucl_pos - 2,  5); // Why these lengths?
+}
+
 StateInfo create_v_state(const RunConfig &config, std::size_t index, char v) {
+
+    // for V gene
+    // where does this constant come from? Ask Bruno
+    double exp_decay_prob = std::exp(-0.0023999999999999998L * index);
+
     auto probs = transform(TRACK, [v](char c) -> double {
         return c == v ? 1 : 0;
     });
