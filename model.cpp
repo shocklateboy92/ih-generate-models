@@ -74,22 +74,6 @@ std::vector<std::pair<std::regex, double>> hotspots = {
     {std::regex(".r.yn"), RGYN_MUTABILITY_SCORE}
 };
 
-StateInfo create_v_state(const RunConfig &config, std::size_t index, char v) {
-    std::regex rgx("?[at]a??");
-
-    // for V gene
-    // where does this constant come from? Ask Bruno
-    double exp_decay_prob = std::exp(-0.0023999999999999998L * index);
-
-    auto probs = transform(TRACK, [v](char c) -> double {
-        return c == v ? 1 : 0;
-    });
-    return {
-        "V-" + std::to_string(index),
-        emission_probs_t(probs.begin(), probs.end())
-    };
-}
-
 
 HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input) {
     HiddenMarkovModel ret = {};
@@ -100,10 +84,34 @@ HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input)
     std::string fstr = full_v_seq.substr(input.blast_result.v_match_start -1, full_v_seq.length());
 
     // Now make a state for each NT in the V-Gene
-    auto t = transform(index(fstr, 0), [&config](auto i) {
-        std::string penta_nucleotide = get_penta_nucleotide(i.index(), fstr);
+    auto t = transform(index(fstr, 0), [&](auto i) -> StateInfo {
 
-        return create_v_state(config, i.index(), i.value());
+        // for V gene
+        // where does this constant come from? Ask Bruno
+        double exp_decay_prob = std::exp(-0.0023999999999999998L * i.value());
+
+        // fetch the current penta-nucleotide
+        std::string penta_nucleotide = get_penta_nucleotide(fstr, i.index());
+
+        // check for matching hotspots
+        double mutability_score = NO_HOTSPOT_MUTABILITY_SCORE;
+        for (auto p : hotspots) {
+            if (std::regex_match(penta_nucleotide, p.first)) {
+                mutability_score = p.second;
+            }
+        }
+
+        double mutation_prob =
+                exp_decay_prob * mutability_score * input.a_score;
+
+        auto probs = transform(TRACK, [&](char c) -> double {
+            return c == i.value() ? 1 - mutation_prob : mutation_prob;
+        });
+
+        return {
+            "V-" + std::to_string(i.index()),
+                    emission_probs_t(probs.begin(), probs.end())
+        };
     });
 
     ret.states.assign(t.begin(), t.end());
