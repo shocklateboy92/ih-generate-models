@@ -63,15 +63,15 @@ double NNCY_MUTABILITY_SCORE = (WRCY_MUTABILITY_SCORE * 0.25)+(NO_HOTSPOT_MUTABI
 double WRCN_MUTABILITY_SCORE = ((WRCY_MUTABILITY_SCORE + NO_HOTSPOT_MUTABILITY_SCORE)/2);
 
 std::vector<std::pair<std::regex, double>> hotspots = {
-    {"?[at]a??", WAN_MUTABILITY_SCORE},
-//    {"?na??", NAN_MUTABILITY_SCORE},
+    {std::regex(".[at]a.."), WAN_MUTABILITY_SCORE},
+    {std::regex(".na.."), NAN_MUTABILITY_SCORE},
 
-//    {"??a??", NO_HOTSPOT_MUTABILITY_SCORE},
+    {std::regex("..a.."), NO_HOTSPOT_MUTABILITY_SCORE},
 
-//    {"?[ag]?[ct][at]", RGYW_MUTABILITY_SCORE},
-//    {"?n?yw", NGYW_MUTABILITY_SCORE},
-//    {"?r?n?", RGNN_MUTABILITY_SCORE},
-//    {"?r?yn", RGYN_MUTABILITY_SCORE}
+    {std::regex(".[ag].[ct][at]"), RGYW_MUTABILITY_SCORE},
+    {std::regex(".n.yw"), NGYW_MUTABILITY_SCORE},
+    {std::regex(".r.n."), RGNN_MUTABILITY_SCORE},
+    {std::regex(".r.yn"), RGYN_MUTABILITY_SCORE}
 };
 
 StateInfo create_v_state(const RunConfig &config, std::size_t index, char v) {
