@@ -102,7 +102,7 @@ HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input)
                 exp_decay_prob * mutability_score * input.a_score;
 
         auto probs = transform(TRACK, [&](char c) -> double {
-            return c == i.value() ? 1 - mutation_prob : mutation_prob;
+            return c == i.value() ? 1 - (mutation_prob * 3) : mutation_prob;
         });
 
         return {
