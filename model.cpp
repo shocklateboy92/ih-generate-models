@@ -33,7 +33,7 @@ double calculateAScore(const BlastResult &br) {
 std::string get_penta_nucleotide(std::string seq_string, int nucl_pos) {
     std::stringstream ss;
     ss << "uu" << seq_string << "uu";
-    return ss.str().substr(nucl_pos - 2,  5); // Why these lengths?
+    return ss.str().substr(nucl_pos,  5);
 }
 
 //new coverage values are based on the germline frequency of the hotspots
