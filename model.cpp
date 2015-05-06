@@ -23,7 +23,7 @@ BlastResult parseBlastOutput(const pugi::xpath_node &node) {
         std::string(hit.child_value("Hit_id")).substr(4),
         hsps.child_value("Hsp_hseq"),
         std::stoul(hsps.child_value("Hsp_hit-from")),
-        hsps.child_value("Hit_qseq")
+        hsps.child_value("Hsp_qseq")
     };
 }
 

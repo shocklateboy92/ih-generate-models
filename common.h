@@ -37,7 +37,7 @@ struct BlastResult {
     const std::string v_name;
     const std::string v_match_string;
     const std::size_t v_match_start;
-    const std::string v_aligned_string;
+    const std::string v_input_string;
 };
 
 struct SequenceInfo {
