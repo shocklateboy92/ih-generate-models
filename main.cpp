@@ -63,6 +63,7 @@ int main(int argc, char *argv[]) {
     }
 
     std::size_t matches = 0;
+    double max_diff = 0;
     for (const HiddenMarkovModel &model : r3) {
         std::string token;
         v_probs >> token;
@@ -73,13 +74,18 @@ int main(int argc, char *argv[]) {
                 assert(v_probs.good());
                 double ep;
                 v_probs >> ep;
-//                assert(p == std::round(ep));
-                std::cout << p - ep << " ";
+                double diff = p - ep;
+                std::cout << diff << " ";
+                assert (diff < 0.5);
+                if (diff > max_diff) {
+                    max_diff = diff;
+                }
                 matches++;
             }
             std::endl(std::cout);
         }
     }
+    std::cout << "MAX ERROR = " << max_diff << std::endl;
 
     return 0;
 }
