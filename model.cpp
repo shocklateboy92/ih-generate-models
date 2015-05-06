@@ -38,17 +38,17 @@ std::string get_penta_nucleotide(std::string seq_string, int nucl_pos) {
 
 //new coverage values are based on the germline frequency of the hotspots
 //for 59982 4mers in all germline IGHV, 2284 RGYW, 2116 WRCY, 4349 WAN and 51233 Non-HS
-double RGYW_Nucleotide_coverage = 0.0381D;
-double WRCY_Nucleotide_coverage = 0.0353D;
-double WAN_Nucleotide_coverage = 0.0725D;
-double NO_HOTSPOT_Nucleotide_coverage = 0.854D;
+double RGYW_Nucleotide_coverage = 0.0381l;
+double WRCY_Nucleotide_coverage = 0.0353l;
+double WAN_Nucleotide_coverage = 0.0725l;
+double NO_HOTSPOT_Nucleotide_coverage = 0.854l;
 
 //mutation probabilities calculated from Barington 2007 JI paper
 //4592 muts total, 598 RGYW, 633 WAN, 558 WRCY, 2803 in non-hotspots
-double RGYW_mutation_prob = 0.130D;
-double WRCY_mutation_prob = 0.122D;
-double WAN_mutation_prob = 0.138D;
-double NO_HOTSPOT_mutation_prob = 0.610D;
+double RGYW_mutation_prob = 0.130l;
+double WRCY_mutation_prob = 0.122l;
+double WAN_mutation_prob = 0.138l;
+double NO_HOTSPOT_mutation_prob = 0.610l;
 
 double NO_HOTSPOT_MUTABILITY_SCORE = (NO_HOTSPOT_mutation_prob/NO_HOTSPOT_Nucleotide_coverage);
 double WAN_MUTABILITY_SCORE = (WAN_mutation_prob/WAN_Nucleotide_coverage);
