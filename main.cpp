@@ -6,14 +6,12 @@
 
 #include <assert.h>
 #include "common.h"
+#include "a-score.h"
 
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/numeric.hpp>
-//#include <boost/phoenix/phoenix.hpp>
 
 BlastResult parseBlastOutput(const pugi::xpath_node &node);
-
-double calculateAScore(const BlastResult &br);
 
 RunConfig prepareConfig(int argc, char *pString[]);
 

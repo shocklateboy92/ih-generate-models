@@ -35,8 +35,9 @@ struct RunConfig {
 
 struct BlastResult {
     const std::string v_name;
-    const std::string v_string;
+    const std::string v_match_string;
     const std::size_t v_match_start;
+    const std::string v_aligned_string;
 };
 
 struct SequenceInfo {
@@ -48,7 +49,7 @@ struct SequenceInfo {
 };
 
 struct MutationProbabilites {
-    
+
 };
 
 HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input);
