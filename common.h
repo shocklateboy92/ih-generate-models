@@ -16,6 +16,9 @@ constexpr std::size_t TRACK_LENGTH = 4;
 using emission_probs_t = std::vector<double>;
 const std::array<char, TRACK_LENGTH> TRACK = {'A','G','C','T'};
 using seq_map_t = std::unordered_map<std::string, FastaSequence>;
+using mutation_probs_t = std::unordered_map<
+    std::string,
+    double >;
 
 struct StateInfo {
     std::string name;
@@ -31,6 +34,7 @@ struct RunConfig {
     const std::vector<FastaSequence> j_repo;
     const std::vector<FastaSequence> d_repo;
     const seq_map_t v_repo;
+    const mutation_probs_t mutation_probs;
 };
 
 struct BlastResult {

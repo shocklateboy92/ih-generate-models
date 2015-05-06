@@ -90,6 +90,23 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
+mutation_probs_t readMutationProbsFile(const char * fileName) {
+    mutation_probs_t ret;
+
+    std::ifstream is(fileName, std::ios::in);
+    assert (is.is_open());
+
+    while (is.good()) {
+        std::string str; double prob;
+        is >> str; is >> prob;
+
+        // hopefully, the don't change the whitespace
+        ret[{str[0], str[2], str[5], str[7]}] = prob;
+    }
+
+    return ret;
+}
+
 RunConfig prepareConfig(int argc, char *argv[]) {
     return {
             readRepertoire("IGHJRepertoire.fasta"),
@@ -101,7 +118,8 @@ RunConfig prepareConfig(int argc, char *argv[]) {
                         map.insert({f.name(), f});
                         return map;
                     }
-            )
+            ),
+            readMutationProbsFile("Mutation_spectrum.txt")
     };
 }
 

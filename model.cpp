@@ -70,6 +70,7 @@ std::vector<std::pair<std::regex, double>> hotspots = {
     {std::regex(".r.n."), RGNN_MUTABILITY_SCORE},
     {std::regex(".r.yn"), RGYN_MUTABILITY_SCORE}
 };
+// TODO: Finish regexs for hotspots
 
 
 HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input) {
