@@ -75,9 +75,11 @@ int main(int argc, char *argv[]) {
                 assert(v_probs.good());
                 double ep;
                 v_probs >> ep;
-                assert(p == std::round(ep));
+//                assert(p == std::round(ep));
+                std::cout << p - ep << " ";
                 matches++;
             }
+            std::endl(std::cout);
         }
     }
 
