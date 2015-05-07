@@ -27,11 +27,15 @@ BlastResult parseBlastOutput(const pugi::xpath_node &node) {
     };
 }
 
-std::string get_penta_nucleotide(std::string seq_string, int nucl_pos) {
+template <std::size_t N>
+std::string _get_n_nucleotide(std::string seq_string, int nucl_pos) {
     std::stringstream ss;
     ss << "uu" << seq_string << "uu";
-    return ss.str().substr(nucl_pos,  5);
+    return ss.str().substr(nucl_pos,  N);
 }
+
+auto get_penta_nucleotide = _get_n_nucleotide<5>;
+auto get_tri_nucleotide = _get_n_nucleotide<5>;
 
 //new coverage values are based on the germline frequency of the hotspots
 //for 59982 4mers in all germline IGHV, 2284 RGYW, 2116 WRCY, 4349 WAN and 51233 Non-HS
@@ -72,6 +76,7 @@ std::vector<std::pair<std::regex, double>> hotspots = {
 };
 // TODO: Finish regexs for hotspots
 
+double MIN_MUTATION_PROB = 0.02l;
 
 HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input) {
     HiddenMarkovModel ret = {};
@@ -103,7 +108,13 @@ HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input)
                 exp_decay_prob * mutability_score * input.a_score;
 
         auto probs = transform(TRACK, [&](char c) -> double {
-            return c == i.value() ? 1 - (mutation_prob * 3) : mutation_prob;
+//            std::string key = get_tri_nucleotide(fstr, i.index()).insert(2, 1, c);
+//            double mutation_ratio = config.mutation_probs.at(key);
+            double mutation_ratio = 1;
+
+            return c == i.value()
+                    ? 1 - ((mutation_prob - MIN_MUTATION_PROB) * 3)
+                    : mutation_prob * mutation_ratio + MIN_MUTATION_PROB;
         });
 
         return {

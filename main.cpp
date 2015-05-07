@@ -100,6 +100,8 @@ mutation_probs_t readMutationProbsFile(const char * fileName) {
         std::string str; double prob;
         is >> str; is >> prob;
 
+        std::transform(str.begin(), str.end(), str.begin(), tolower);
+
         // hopefully, the don't change the whitespace
         ret[{str[0], str[2], str[5], str[7]}] = prob;
     }
