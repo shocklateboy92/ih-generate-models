@@ -27,14 +27,16 @@ BlastResult parseBlastOutput(const pugi::xpath_node &node) {
     };
 }
 
-std::function<seq_t(seq_t, int)> get_penta_nucleotide = _get_n_nucleotide<5>;
-std::function<seq_t(seq_t, int)> get_tri_nucleotide = _get_n_nucleotide<5>;
+decltype(get_penta_nucleotide) get_penta_nucleotide = _get_n_nucleotide<5>;
+decltype(get_tri_nucleotide) get_tri_nucleotide = _get_n_nucleotide<3>;
 
 template <std::size_t N>
 std::string _get_n_nucleotide(std::string seq_string, int nucl_pos) {
+    static const std::size_t padding = 2;
     std::stringstream ss;
+
     ss << "uu" << seq_string << "uu";
-    return ss.str().substr(nucl_pos,  N);
+    return ss.str().substr(nucl_pos + padding - N/2,  N);
 }
 
 //new coverage values are based on the germline frequency of the hotspots
