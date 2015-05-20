@@ -11,11 +11,16 @@
 
 #include <pugixml/pugixml.hpp>
 #include <fastareader/fastareader.h>
+#include <catch/catch.hpp>
 
-constexpr std::size_t TRACK_LENGTH = 4;
-using emission_probs_t = std::vector<double>;
-const std::array<char, TRACK_LENGTH> TRACK = {'A','G','C','T'};
+#include "stdafx.h"
+
+const std::array<char, 4> TRACK = {'A','G','C','T'};
+
+using seq_t = std::string;
 using seq_map_t = std::unordered_map<std::string, FastaSequence>;
+using emission_probs_t = std::vector<double>;
+
 using mutation_probs_t = std::unordered_map<
     std::string,
     double >;
@@ -55,6 +60,11 @@ struct SequenceInfo {
 struct MutationProbabilites {
 
 };
+
+template <std::size_t N>
+seq_t _get_n_nucleotide(seq_t seq_string, int nucl_pos);
+extern std::function<seq_t(seq_t, int)> get_penta_nucleotide;
+extern std::function<seq_t(seq_t, int)> get_tri_nucleotide;
 
 HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input);
 

@@ -7,7 +7,7 @@ set (CMAKE_CXX_COMPILER "clang++")
 set(SOURCE_FILES
     a-score.cpp
     model.cpp
-    main.cpp
+    mutation-ratios.cpp
     )
 
 set(EXTERNAL_SOURCE_FILES
@@ -15,7 +15,18 @@ set(EXTERNAL_SOURCE_FILES
     lib/fastareader/fastareader.cpp
     lib/fastareader/abstractcharsequence.cpp
     )
-add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${EXTERNAL_SOURCE_FILES})
+add_executable(
+    ${PROJECT_NAME}
+    ${SOURCE_FILES}
+    ${EXTERNAL_SOURCE_FILES}
+    main.cpp
+)
+add_executable(
+    "${PROJECT_NAME}-test"
+    ${SOURCE_FILES}
+    ${EXTERNAL_SOURCE_FILES}
+    test.cpp
+)
 
 include_directories(${CMAKE_SOURCE_DIR}/lib)
 #target_include_directories(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/lib)

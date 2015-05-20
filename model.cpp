@@ -3,8 +3,8 @@
 //
 
 #include "common.h"
+#include "mutation-ratios.h"
 
-#include <algorithm>
 #include <boost/range.hpp>
 #include <boost/range/adaptors.hpp>
 #include <boost/assign.hpp>
@@ -27,15 +27,15 @@ BlastResult parseBlastOutput(const pugi::xpath_node &node) {
     };
 }
 
+std::function<seq_t(seq_t, int)> get_penta_nucleotide = _get_n_nucleotide<5>;
+std::function<seq_t(seq_t, int)> get_tri_nucleotide = _get_n_nucleotide<5>;
+
 template <std::size_t N>
 std::string _get_n_nucleotide(std::string seq_string, int nucl_pos) {
     std::stringstream ss;
     ss << "uu" << seq_string << "uu";
     return ss.str().substr(nucl_pos,  N);
 }
-
-auto get_penta_nucleotide = _get_n_nucleotide<5>;
-auto get_tri_nucleotide = _get_n_nucleotide<5>;
 
 //new coverage values are based on the germline frequency of the hotspots
 //for 59982 4mers in all germline IGHV, 2284 RGYW, 2116 WRCY, 4349 WAN and 51233 Non-HS
@@ -77,38 +77,6 @@ std::vector<std::pair<std::regex, double>> hotspots = {
 // TODO: Finish regexs for hotspots
 
 double MIN_MUTATION_PROB = 0.02l;
-namespace nucleotides {
-    char gap = '-';
-    char any = '*';
-}
-namespace nt = nucleotides;
-
-// compare to MutationSpectrum.getTNProbability()
-double fetch_mutation_ratio(std::string sequence, std::size_t index, char to_nt) {
-    enum tri_nt_pos {
-        left = 0,
-        from,
-        to,
-        right
-    };
-    auto tri_nt = get_tri_nucleotide(sequence, index);
-    auto mutated_tri_nt = tri_nt.insert(2, 1, to_nt);
-
-    // when we support gaps, this should cause probability = 0
-    assert(to_nt != nt::gap);
-
-    assert(sequence.find(nt::gap) == std::string::npos); // don't support gaps yet
-
-    std::vector<std::string> keys = {mutated_tri_nt};
-    if (to_nt == nt::any) {
-        std::transform(TRACK.begin(), TRACK.end(), std::back_inserter(keys),
-                       [=](char t) {
-            return tri_nt.replace();
-        });
-    }
-
-    return 1;
-}
 
 HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input) {
     HiddenMarkovModel ret = {};
@@ -146,7 +114,8 @@ HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input)
 
         auto probs = transform(TRACK, [&](char c) -> double {
 
-            double mutation_ratio = fetch_mutation_ratio(fstr, i.index(), c);
+            double mutation_ratio =
+                    fetch_mutation_ratio(config, fstr, i.index(), c);
 
             return c == i.value()
                     ? 1 - ((mutation_prob - MIN_MUTATION_PROB) * 3)

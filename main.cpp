@@ -1,12 +1,6 @@
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <algorithm>
-#include <string>
-
-#include <assert.h>
 #include "common.h"
 #include "a-score.h"
+#include "mutation-ratios.h"
 
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/numeric.hpp>
@@ -88,25 +82,6 @@ int main(int argc, char *argv[]) {
     std::cout << "MAX ERROR = " << max_diff << std::endl;
 
     return 0;
-}
-
-mutation_probs_t readMutationProbsFile(const char * fileName) {
-    mutation_probs_t ret;
-
-    std::ifstream is(fileName, std::ios::in);
-    assert (is.is_open());
-
-    while (is.good()) {
-        std::string str; double prob;
-        is >> str; is >> prob;
-
-        std::transform(str.begin(), str.end(), str.begin(), tolower);
-
-        // hopefully, the don't change the whitespace
-        ret[{str[0], str[2], str[5], str[7]}] = prob;
-    }
-
-    return ret;
 }
 
 RunConfig prepareConfig(int argc, char *argv[]) {
