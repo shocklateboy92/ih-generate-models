@@ -77,14 +77,51 @@ std::vector<std::pair<std::regex, double>> hotspots = {
 // TODO: Finish regexs for hotspots
 
 double MIN_MUTATION_PROB = 0.02l;
+namespace nucleotides {
+    char gap = '-';
+    char any = '*';
+}
+namespace nt = nucleotides;
+
+// compare to MutationSpectrum.getTNProbability()
+double fetch_mutation_ratio(std::string sequence, std::size_t index, char to_nt) {
+    enum tri_nt_pos {
+        left = 0,
+        from,
+        to,
+        right
+    };
+    auto tri_nt = get_tri_nucleotide(sequence, index);
+    auto mutated_tri_nt = tri_nt.insert(2, 1, to_nt);
+
+    // when we support gaps, this should cause probability = 0
+    assert(to_nt != nt::gap);
+
+    assert(sequence.find(nt::gap) == std::string::npos); // don't support gaps yet
+
+    std::vector<std::string> keys = {mutated_tri_nt};
+    if (to_nt == nt::any) {
+        std::transform(TRACK.begin(), TRACK.end(), std::back_inserter(keys),
+                       [=](char t) {
+            return tri_nt.replace();
+        });
+    }
+
+    return 1;
+}
 
 HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input) {
     HiddenMarkovModel ret = {};
+
     // Use full V_gene from the repertoire, rather
     // than just the aligned segment BLAST spits out
-    std::string full_v_seq = config.v_repo.at(input.blast_result.v_name).c_str();
+    std::string full_v_seq = config.v_repo
+            .at(input.blast_result.v_name)
+            .c_str();
     // But we only care about the V sequence from the start of the aligned region
-    std::string fstr = full_v_seq.substr(input.blast_result.v_match_start -1, full_v_seq.length());
+    std::string fstr = full_v_seq.substr(
+                input.blast_result.v_match_start -1,
+                full_v_seq.length());
 
     // Now make a state for each NT in the V-Gene
     auto t = transform(index(fstr, 0), [&](auto i) -> StateInfo {
@@ -108,9 +145,8 @@ HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input)
                 exp_decay_prob * mutability_score * input.a_score;
 
         auto probs = transform(TRACK, [&](char c) -> double {
-//            std::string key = get_tri_nucleotide(fstr, i.index()).insert(2, 1, c);
-//            double mutation_ratio = config.mutation_probs.at(key);
-            double mutation_ratio = 1;
+
+            double mutation_ratio = fetch_mutation_ratio(fstr, i.index(), c);
 
             return c == i.value()
                     ? 1 - ((mutation_prob - MIN_MUTATION_PROB) * 3)
