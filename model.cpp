@@ -35,7 +35,7 @@ std::string _get_n_nucleotide(std::string seq_string, int nucl_pos) {
     static const std::size_t padding = 2;
     std::stringstream ss;
 
-    ss << "uu" << seq_string << "uu";
+    ss << "**" << seq_string << "**";
     return ss.str().substr(nucl_pos + padding - N/2,  N);
 }
 
