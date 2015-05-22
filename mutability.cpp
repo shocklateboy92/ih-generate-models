@@ -28,21 +28,25 @@ double NNCY_MUTABILITY_SCORE = (WRCY_MUTABILITY_SCORE * 0.25)+(NO_HOTSPOT_MUTABI
 double WRCN_MUTABILITY_SCORE = ((WRCY_MUTABILITY_SCORE + NO_HOTSPOT_MUTABILITY_SCORE)/2);
 
 std::vector<std::pair<std::regex, double>> hotspots = {
+    {std::regex("..T.."), NO_HOTSPOT_MUTABILITY_SCORE},
+
     {std::regex(".[AT]A.."), WAN_MUTABILITY_SCORE},
     {std::regex(".NA.."), NAN_MUTABILITY_SCORE},
 
     {std::regex("..A.."), NO_HOTSPOT_MUTABILITY_SCORE},
 
-    {std::regex(".[AG].[CT][AT]"), RGYW_MUTABILITY_SCORE},
-    {std::regex(".N.YW"), NGYW_MUTABILITY_SCORE},
-    {std::regex(".R.N."), RGNN_MUTABILITY_SCORE},
-    {std::regex(".R.YN"), RGYN_MUTABILITY_SCORE},
-    {std::regex("[AT][AG].[CT]."), WRCY_MUTABILITY_SCORE},
-    {std::regex("[AT][AG].N."), WRCN_MUTABILITY_SCORE},
-    {std::regex(".N.[CT]."), NNCY_MUTABILITY_SCORE},
-    {std::regex("N[AG].[CT]."), NRCY_MUTABILITY_SCORE}
+    {std::regex(".[AG]G[CT][AT]"), RGYW_MUTABILITY_SCORE},
+    {std::regex(".NG[CT][AT]"), NGYW_MUTABILITY_SCORE},
+    {std::regex(".[AG]GN."), RGNN_MUTABILITY_SCORE},
+    {std::regex(".[AG]G[CT]N"), RGYN_MUTABILITY_SCORE},
+
+    {std::regex("..G.."), NO_HOTSPOT_MUTABILITY_SCORE},
+
+    {std::regex("[AT][AG]C[CT]."), WRCY_MUTABILITY_SCORE},
+    {std::regex("[AT][AG]CN."), WRCN_MUTABILITY_SCORE},
+    {std::regex(".NC[CT]."), NNCY_MUTABILITY_SCORE},
+    {std::regex("N[AG]C[CT]."), NRCY_MUTABILITY_SCORE}
 };
-// TODO: Finish regexs for hotspots
 
 double fetch_mutability_score(const seq_t &fstr, std::size_t index) {
 
