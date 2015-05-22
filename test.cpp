@@ -2,6 +2,7 @@
 
 #include "common.h"
 #include "mutation-ratios.h"
+#include "mutability.h"
 
 TEST_CASE("mutation ratio", "[mr]") {
     RunConfig config {
@@ -29,4 +30,23 @@ TEST_CASE("testing mutation_spectrum.txt parsing") {
     REQUIRE(probs.at("AAGT") == 0.533465028);
     REQUIRE(probs.at("ACTT") == 0.41283902);
     REQUIRE(probs.at("AGCT") == 0.404121647);
+}
+
+extern std::unordered_map<double, std::string> __hotspot_symbols;
+
+TEST_CASE("testing hotspot mutability score model", "[mutability]") {
+    std::ifstream is("hotspots.txt", std::ios_base::in);
+    assert(is.is_open());
+
+    do {
+        seq_t seq; double prob;
+        is >> seq; is >> prob;
+
+//        std::cerr << "seq : " << seq;
+//        if (__hotspot_symbols.count(prob) > 0)
+//            std::cerr << ", prob: " << __hotspot_symbols.at(prob);
+//        std::endl(std::cerr);
+
+        CHECK(fetch_mutability_score(seq, 2) == prob);
+    } while (is.good());
 }
