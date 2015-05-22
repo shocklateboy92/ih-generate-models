@@ -8,6 +8,7 @@ set(SOURCE_FILES
     a-score.cpp
     model.cpp
     mutation-ratios.cpp
+    mutability.cpp
     )
 
 set(EXTERNAL_SOURCE_FILES
