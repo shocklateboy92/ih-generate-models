@@ -105,6 +105,8 @@ std::vector<FastaSequence> readRepertoire(const char *repo_path) {
     std::ifstream is(repo_path);
     assert(is.is_open());
 
+    fr.toupper(true);
+
     while (!is.eof()) {
         auto seq = fr.next(is);
         ret.push_back(*seq.get());
