@@ -66,6 +66,22 @@ StateInfo createState(const RunConfig &config, const SequenceInfo &input,
 
 }
 
+void createStates(const RunConfig &config, const SequenceInfo &input,
+                  std::function<double(double)> exp_decay_fn,
+                  const seq_t &fstr, HiddenMarkovModel &ret)
+{
+    for (std::size_t i = 0; i < fstr.size(); i++) {
+        ret.states.push_back(
+                    createState(
+                        config,
+                        input,
+                        exp_decay_fn(i),
+                        fstr,
+                        i)
+                    );
+    }
+}
+
 HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input) {
     HiddenMarkovModel ret = {};
 
@@ -79,34 +95,27 @@ HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input)
                 input.blast_result.v_match_start -1,
                 full_v_seq.length());
 
+    auto exp_decay_fn = [](double i) {return std::exp(EXP_DECAY_INDEX_CONST * i);};
+
     // Now make a state for each NT in the V-Gene
-    double i = 0;
-    for (nt_t nt : fstr) {
-        ret.states.push_back(
-                    createState(
-                        config,
-                        input,
-                        std::exp(EXP_DECAY_INDEX_CONST * i),
-                        fstr,
-                        i)
-                    );
-        i++;
-    }
+    createStates(config, input, exp_decay_fn, fstr, ret);
 
     // Now, do the same for all possible D-genes
     for (auto seq : config.d_repo) {
-        double i = 0;
-        for (nt_t nt : seq_t(seq.c_str())) {
-            ret.states.push_back(
-                        createState(
-                            config,
-                            input,
-                            std::exp(EXP_DECAY_INDEX_CONST * i),
-                            seq.c_str(),
-                            i)
-                        );
-            i++;
-        }
+        createStates(config, input,
+                     [](double i) {
+            return std::exp(EXP_DECAY_INDEX_CONST * i);
+        },
+        seq.c_str(), ret);
+    }
+
+    // Now, repeat for all the J genes as well
+    for (auto seq : config.j_repo) {
+        createStates(config, input,
+                     [](double i) {
+            return std::exp(EXP_DECAY_INDEX_CONST * i);
+        },
+        seq.c_str(), ret);
     }
 
     return ret;
