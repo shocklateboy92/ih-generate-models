@@ -39,6 +39,32 @@ std::string _get_n_nucleotide(std::string seq_string, int nucl_pos) {
 }
 
 double MIN_MUTATION_PROB = 0.02l;
+double EXP_DECAY_INDEX_CONST = -0.0023999999999999998L;
+
+StateInfo createState(const RunConfig &config, const SequenceInfo &input,
+                      double exp_decay_prob, seq_t fstr, std::size_t i) {
+
+        double mutability_score = fetch_mutability_score(fstr, i);
+
+        double mutation_prob =
+                exp_decay_prob * mutability_score * input.a_score;
+
+        auto probs = transform(TRACK, [&](char c) -> double {
+
+            double mutation_ratio =
+                    fetch_mutation_ratio(config, fstr, i, c);
+
+            return c == fstr[i]
+                    ? 1 - ((mutation_prob - MIN_MUTATION_PROB) * 3)
+                    : mutation_prob * mutation_ratio + MIN_MUTATION_PROB;
+        });
+
+        return {
+            "V-" + std::to_string(i),
+                    emission_probs_t(probs.begin(), probs.end())
+        };
+
+}
 
 HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input) {
     HiddenMarkovModel ret = {};
@@ -54,34 +80,34 @@ HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input)
                 full_v_seq.length());
 
     // Now make a state for each NT in the V-Gene
-    auto t = transform(index(fstr, 0), [&](auto i) -> StateInfo {
+    double i = 0;
+    for (nt_t nt : fstr) {
+        ret.states.push_back(
+                    createState(
+                        config,
+                        input,
+                        std::exp(EXP_DECAY_INDEX_CONST * i),
+                        fstr,
+                        i)
+                    );
+        i++;
+    }
 
-        // for V gene
-        // where does this constant come from? Ask Bruno
-        double exp_decay_prob = std::exp(-0.0023999999999999998L * i.value());
-
-        double mutability_score = fetch_mutability_score(fstr, i.index());
-
-        double mutation_prob =
-                exp_decay_prob * mutability_score * input.a_score;
-
-        auto probs = transform(TRACK, [&](char c) -> double {
-
-            double mutation_ratio =
-                    fetch_mutation_ratio(config, fstr, i.index(), c);
-
-            return c == i.value()
-                    ? 1 - ((mutation_prob - MIN_MUTATION_PROB) * 3)
-                    : mutation_prob * mutation_ratio + MIN_MUTATION_PROB;
-        });
-
-        return {
-            "V-" + std::to_string(i.index()),
-                    emission_probs_t(probs.begin(), probs.end())
-        };
-    });
-
-    ret.states.assign(t.begin(), t.end());
+    // Now, do the same for all possible D-genes
+    for (auto seq : config.d_repo) {
+        double i = 0;
+        for (nt_t nt : seq_t(seq.c_str())) {
+            ret.states.push_back(
+                        createState(
+                            config,
+                            input,
+                            std::exp(EXP_DECAY_INDEX_CONST * i),
+                            seq.c_str(),
+                            i)
+                        );
+            i++;
+        }
+    }
 
     return ret;
 }
