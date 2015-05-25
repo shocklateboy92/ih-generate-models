@@ -3,10 +3,14 @@
 #include "common.h"
 #include "mutation-ratios.h"
 #include "mutability.h"
+#include "a-score.h"
 
 TEST_CASE("mutation ratio", "[mr]") {
     RunConfig config {
-        .mutation_probs = readMutationProbsFile("Mutation_spectrum.txt")
+        std::vector<FastaSequence>(),
+        std::vector<FastaSequence>(),
+        seq_map_t(),
+        readMutationProbsFile("Mutation_spectrum.txt")
     };
 
     REQUIRE(fetch_mutation_ratio(config, "AAT", 1, 'G') == 0.533465028);
@@ -49,4 +53,23 @@ TEST_CASE("testing hotspot mutability score model", "[mutability]") {
 
         CHECK(fetch_mutability_score(seq, 2) == prob);
     } while (is.good());
+}
+
+TEST_CASE("testing a-score calculation", "[a_score]") {
+    pugi::xml_document doc;
+    assert(doc.load_file("blastOutput.xml"));
+    auto nodes = doc.select_nodes("//BlastOutput/BlastOutput_iterations/Iteration");
+
+    REQUIRE(calculateAScore(parseBlastOutput(nodes[0])) == 0.06);
+}
+
+TEST_CASE("testing blast/parse stage", "[blast]") {
+    pugi::xml_document doc;
+    assert(doc.load_file("blastOutput.xml"));
+    auto nodes = doc.select_nodes("//BlastOutput/BlastOutput_iterations/Iteration");
+
+    BlastResult br = parseBlastOutput(nodes[0]);
+    REQUIRE(br.v_match_start == 15);
+    REQUIRE(br.v_match_string == "GAGTCGGGGGGAGGCTGGGTACAGCCTGGCAGGTCCCTGAGACTCTCCTGTTCAGCCTCTGGACTCACCTTTGATGATTATGCCATGCACTGGGTCCGGCAAGCTCCAGGGAAGGGCCTGGAGTGGGTCTCCGGTATTAGTTGGAACAGTGGTGTTAGAGCCTATGCGGACTCTGTGAAGGGCCGATTCACCATCTCCAGAGACAACGGCAAGAATTCCCTGTATCTGCAAATGAACAGTCTGAGACCTGAGGACACGGCCTTGTATTATTGTGCAAAAGATATTCGGGCTGCTACCCCATACGCCCTTGATCACTGGGGCCAGGGAGTCCTGGTCACCGTCTCCTCA");
+    REQUIRE(br.v_input_string == "GAGTCTGGGGGAGGCTTGGTACAGCCTGGCAGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTGATGATTATGCCATGCACTGGGTCCGGCAAGCTCCAGGGAAGGGCCTGGAGTGGGTCTCAGGTATTAGTTGGAATAGTGGTAGCATAGGCTATGCGGACTCTGTGAAGGGCCGATTCACCATCTCCAGAGACAACGCCAAGAACTCCCTGTATCTGCAAATGAACAGTCTGAGAGCTGAGGACACGGCCTTGTATTACTGTGCAAAAGATA");
 }

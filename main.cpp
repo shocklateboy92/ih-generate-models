@@ -5,7 +5,6 @@
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/numeric.hpp>
 
-BlastResult parseBlastOutput(const pugi::xpath_node &node);
 
 RunConfig prepareConfig(int argc, char *pString[]);
 

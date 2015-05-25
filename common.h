@@ -67,5 +67,6 @@ extern std::function<seq_t(seq_t, int)> get_penta_nucleotide;
 extern std::function<seq_t(seq_t, int)> get_tri_nucleotide;
 
 HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input);
+BlastResult parseBlastOutput(const pugi::xpath_node &node);
 
 #endif //_IH_GENERATE_MODELS_COMMON_H_
