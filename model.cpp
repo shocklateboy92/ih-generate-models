@@ -42,7 +42,7 @@ double MIN_MUTATION_PROB = 0.02l;
 double EXP_DECAY_INDEX_CONST = -0.0023999999999999998L;
 
 StateInfo createState(const RunConfig &config, const SequenceInfo &input,
-                      double exp_decay_prob, seq_t fstr, std::size_t i) {
+                      double exp_decay_prob, const seq_t &fstr, std::size_t i) {
 
         double mutability_score = fetch_mutability_score(fstr, i);
 

@@ -16,7 +16,7 @@ enum tri_nt_pos {
 };
 
 // compare to MutationSpectrum.getTNProbability()
-double fetch_mutation_ratio(RunConfig config, std::string sequence,
+double fetch_mutation_ratio(const RunConfig &config, const seq_t &sequence,
                             std::size_t index, char to_nt) {
     auto tri_nt = get_tri_nucleotide(sequence, index);
     auto mutated_tri_nt = tri_nt.insert(tri_nt_pos::to, 1, to_nt);
