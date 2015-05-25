@@ -17,7 +17,8 @@
 
 const std::array<char, 4> TRACK = {'A','G','C','T'};
 
-using seq_t = std::string;
+using nt_t = char;
+using seq_t = std::basic_string<nt_t>;
 using seq_map_t = std::unordered_map<std::string, FastaSequence>;
 using emission_probs_t = std::vector<double>;
 
