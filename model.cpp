@@ -26,9 +26,6 @@ BlastResult parseBlastOutput(const pugi::xpath_node &node) {
     };
 }
 
-decltype(get_penta_nucleotide) get_penta_nucleotide = _get_n_nucleotide<5>;
-decltype(get_tri_nucleotide) get_tri_nucleotide = _get_n_nucleotide<3>;
-
 template <std::size_t N>
 std::string _get_n_nucleotide(std::string seq_string, int nucl_pos) {
     static const std::size_t padding = 2;
@@ -37,6 +34,9 @@ std::string _get_n_nucleotide(std::string seq_string, int nucl_pos) {
     ss << "**" << seq_string << "**";
     return ss.str().substr(nucl_pos + padding - N/2,  N);
 }
+
+decltype(get_penta_nucleotide) get_penta_nucleotide = _get_n_nucleotide<5>;
+decltype(get_tri_nucleotide) get_tri_nucleotide = _get_n_nucleotide<3>;
 
 double MIN_MUTATION_PROB = 0.02l;
 double EXP_DECAY_INDEX_CONST = -0.0023999999999999998L;

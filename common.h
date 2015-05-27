@@ -62,8 +62,6 @@ struct MutationProbabilites {
 
 };
 
-template <std::size_t N>
-seq_t _get_n_nucleotide(seq_t seq_string, int nucl_pos);
 extern std::function<seq_t(seq_t, int)> get_penta_nucleotide;
 extern std::function<seq_t(seq_t, int)> get_tri_nucleotide;
 
