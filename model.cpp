@@ -74,6 +74,22 @@ void createStates(const RunConfig &config, const SequenceInfo &input,
     }
 }
 
+struct state_pos {
+    enum {
+        magic = 0,
+        v_end_no_exo,
+        v_end_exo,
+        n1_start,
+        n1_end,
+        n2_start,
+        n2_end,
+        d_end_no_exo,
+        d_end_exo
+    };
+
+
+};
+
 HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input) {
     HiddenMarkovModel ret = {};
 
@@ -92,6 +108,8 @@ HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input)
     // Now make a state for each NT in the V-Gene
     createStates(config, input, exp_decay_fn, fstr, ret);
 
+    range_t v_states = {0, ret.states.size() - 1};
+
     // Now, do the same for all possible D-genes
     for (auto seq : config.d_repo) {
         createStates(config, input,
@@ -109,6 +127,36 @@ HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input)
         },
         seq.c_str(), ret);
     }
+
+    // Initialize the transitions
+    ret.transitions = transitions_t(ret.states.size());
+
+    // Using hardcoded values for now, will read from file later
+    probs_list_t v_end_exo_probs = { 1.7849193927612356E-6, 4.337659583280163E-5, 6.481808081758074E-4, 0.005955808351520267, 0.03365031276420145, 0.11690722185950304, 0.24974535503543732, 0.32806306897882054, 0.2649848906871161 };
+
+    for (std::size_t i = 0; i < v_states.second; i++) {
+        assert(ret.transitions[i].empty());
+        auto probs_offset = v_states.second - v_end_exo_probs.size();
+        if (i > probs_offset) {
+            double bail_prob = v_end_exo_probs.at(i - probs_offset - 1);
+            ret.transitions[i] = {
+                {
+                    state_pos::v_end_exo,
+                    bail_prob
+                },
+                {i + 1, 1 - bail_prob}
+            };
+        } else {
+            ret.transitions[i] = {
+                {i + 1, 1}
+            };
+        }
+    }
+
+    // We start at the beginning of V
+    ret.transitions[state_pos::magic] = {
+        {v_states.first, 1}
+    };
 
     return ret;
 }

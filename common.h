@@ -21,6 +21,9 @@ using nt_t = char;
 using seq_t = std::basic_string<nt_t>;
 using seq_map_t = std::unordered_map<std::string, FastaSequence>;
 using emission_probs_t = std::vector<double>;
+using transitions_t = std::vector<std::unordered_map<std::size_t, double>>;
+using range_t = std::pair<std::size_t, std::size_t>;
+using probs_list_t = std::vector<double>;
 
 using mutation_probs_t = std::unordered_map<
     std::string,
@@ -33,7 +36,7 @@ struct StateInfo {
 
 struct HiddenMarkovModel {
     std::vector<StateInfo> states;
-    std::vector<std::unordered_map<std::size_t, double>> transitions;
+    transitions_t transitions;
 };
 
 struct RunConfig {
