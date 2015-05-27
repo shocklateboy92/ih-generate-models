@@ -1,7 +1,7 @@
 project(ih-generate-models)
 cmake_minimum_required(VERSION 2.8.4)
 
-set (CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "--std=c++14 -O3")
+set (CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++14")
 
 set(SOURCE_FILES
     a-score.cpp
@@ -31,3 +31,4 @@ add_executable(
 include_directories(${CMAKE_SOURCE_DIR}/lib)
 #target_include_directories(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/lib)
 
+add_definitions("-D__GXX_EXPERIMENTAL_CXX0X__")
