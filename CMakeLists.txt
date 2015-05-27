@@ -8,6 +8,7 @@ set(SOURCE_FILES
     model.cpp
     mutation-ratios.cpp
     mutability.cpp
+    mock-data.cpp
     )
 
 set(EXTERNAL_SOURCE_FILES
