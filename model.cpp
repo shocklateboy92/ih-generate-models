@@ -6,12 +6,12 @@
 #include "mutation-ratios.h"
 #include "mutability.h"
 
-#include <boost/range.hpp>
-#include <boost/range/adaptors.hpp>
-#include <boost/assign.hpp>
-
-using namespace boost::adaptors;
-using namespace boost::assign;
+template <class C, class F>
+auto my_transform(const C &c, F f) {
+    std::vector<decltype(f(c[0]))> v(c.size());
+    std::transform(c.begin(), c.end(), v.begin(), f);
+    return v;
+}
 
 BlastResult parseBlastOutput(const pugi::xpath_node &node) {
     // Only considering the most likely V-gene for now
@@ -49,21 +49,18 @@ StateInfo createState(const RunConfig &config, const SequenceInfo &input,
         double mutation_prob =
                 exp_decay_prob * mutability_score * input.a_score;
 
-        auto probs = transform(TRACK, [&](char c) -> double {
-
-            double mutation_ratio =
-                    fetch_mutation_ratio(config, fstr, i, c);
-
-            return c == fstr[i]
-                    ? 1 - ((mutation_prob - MIN_MUTATION_PROB) * 3)
-                    : mutation_prob * mutation_ratio + MIN_MUTATION_PROB;
-        });
-
         return {
             "V-" + std::to_string(i),
-                    emission_probs_t(probs.begin(), probs.end())
-        };
+             my_transform(TRACK, [&](char c) -> double {
 
+                double mutation_ratio =
+                        fetch_mutation_ratio(config, fstr, i, c);
+
+                return c == fstr[i]
+                        ? 1 - ((mutation_prob - MIN_MUTATION_PROB) * 3)
+                        : mutation_prob * mutation_ratio + MIN_MUTATION_PROB;
+            })
+        };
 }
 
 void createStates(const RunConfig &config, const SequenceInfo &input,
