@@ -6,12 +6,7 @@
 #include "mutation-ratios.h"
 #include "mutability.h"
 
-template <class C, class F>
-auto my_transform(const C &c, F f) {
-    std::vector<decltype(f(c[0]))> v(c.size());
-    std::transform(c.begin(), c.end(), v.begin(), f);
-    return v;
-}
+#include "utils.hpp"
 
 BlastResult parseBlastOutput(const pugi::xpath_node &node) {
     // Only considering the most likely V-gene for now
@@ -51,7 +46,7 @@ StateInfo createState(const RunConfig &config, const SequenceInfo &input,
 
         return {
             "V-" + std::to_string(i),
-             my_transform(TRACK, [&](char c) -> double {
+             transform(TRACK, [&](char c) -> double {
 
                 double mutation_ratio =
                         fetch_mutation_ratio(config, fstr, i, c);
