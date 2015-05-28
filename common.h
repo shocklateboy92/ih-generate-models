@@ -32,6 +32,10 @@ using mutation_probs_t = std::unordered_map<
 struct StateInfo {
     std::string name;
     emission_probs_t emission_probs;
+
+    bool isDotState() const {
+        return emission_probs.empty();
+    }
 };
 
 struct HiddenMarkovModel {

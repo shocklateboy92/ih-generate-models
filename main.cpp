@@ -63,6 +63,9 @@ int main(int argc, char *argv[]) {
         assert("Start_Model" == token);
         assert(v_probs.good());
         for (auto s : model.states) {
+            if (s.isDotState()) {
+                continue;
+            }
             for (auto p : s.emission_probs) {
                 assert(v_probs.good());
                 double ep;
