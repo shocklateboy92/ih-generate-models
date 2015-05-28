@@ -225,10 +225,9 @@ HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input)
         assert (ret.states[pos_end_no_exo].name == "end_no_exo");
 
         double num_genes = config.d_repo.at(i).size();
-        ret.transitions[state_pos::n1_end] = {
-            {state_pos::magic, early_exit_prob},
+        ret.transitions[state_pos::n1_end].insert({
             {pos_start_exo,  (1 - early_exit_prob) / num_genes}
-        };
+        });
 
         ret.transitions[pos_end_no_exo] = {
             {state_pos::magic, early_exit_prob},
@@ -241,8 +240,17 @@ HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input)
         {state_pos::n2_end, 1}
     };
 
+    // FIXME: extract function
     // Now, repeat for all the J genes as well
     for (std::size_t i = 0; i < config.j_repo.size(); i++) {
+        std::size_t pos_start_no_exo = ret.states.size();
+        std::size_t pos_start_exo = pos_start_no_exo + 1;
+        std::size_t gene_start = pos_start_exo + 1;
+
+        std::size_t pos_end_no_exo = gene_start + config.j_repo.at(i).size();
+        std::size_t pos_end_exo = pos_end_no_exo + 1;
+        std::size_t gene_end = pos_end_no_exo - 1;
+
         createStates(
             config,
             input,
@@ -252,8 +260,69 @@ HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input)
             config.j_repo.at(i).c_str(),
             ret
         );
+
+        assert (ret.states[pos_start_exo].name == "start_exo");
+        assert (ret.states[pos_end_no_exo].name == "end_no_exo");
+
+        double num_genes = config.d_repo.at(i).size();
+        ret.transitions[state_pos::n2_end].insert({
+            {pos_start_exo,  (1 - early_exit_prob) / num_genes}
+        });
+
+        ret.transitions[pos_end_no_exo] = {
+            {state_pos::magic, 1},
+        };
+        ret.transitions[pos_end_exo] = ret.transitions[pos_end_no_exo];
     }
 
 
     return ret;
 }
+
+#ifndef SKIP_TESTS
+
+bool check_choke(const HiddenMarkovModel &model, std::size_t cur_state,
+                 std::size_t choke_state) {
+    if (cur_state == choke_state || cur_state == state_pos::magic) {
+        return true;
+    }
+
+    bool has_path_out = false;
+    for (auto t : model.transitions[cur_state]) {
+        if (t.second > 0) {
+            has_path_out |= check_choke(model, t.first, choke_state);
+        }
+    }
+
+    assert(has_path_out);
+    REQUIRE(has_path_out);
+
+    return has_path_out;
+}
+
+TEST_CASE("testing continuity of model", "[transitions]") {
+    RunConfig config = prepareConfig(0, nullptr);
+    SequenceInfo input = {
+        "test",
+        "<future>",
+        BlastResult {
+            "IGHV3-9*01(L1)",
+            "GAGTCTGGGGGAGGCTTGGTACAGCCTGGCAGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTGATGATTATGCCATGCACTGGGTCCGGC",
+            15,
+            "GAGTCGGGGGGAGGCTGGGTACAGCCTGGCAGGTCCCTGAGACTCTCCTGTTCAGCCTCTGGACTCACCTTTGATGATTATGCCATGCACTGGGTCCGGC",
+        },
+        0.06
+    };
+
+    auto model = buildModel(config, input);
+
+    // everyone gets to end of V
+    check_choke(model, state_pos::end_state, state_pos::n1_start);
+
+    // everyone gets to end of D
+    check_choke(model, state_pos::end_state, state_pos::n2_start);
+
+    check_choke(model, state_pos::end_state, state_pos::magic);
+}
+
+#endif

@@ -9,6 +9,7 @@ set(SOURCE_FILES
     mutation-ratios.cpp
     mutability.cpp
     mock-data.cpp
+    init.cpp
     )
 
 set(EXTERNAL_SOURCE_FILES
@@ -22,6 +23,9 @@ add_executable(
     ${EXTERNAL_SOURCE_FILES}
     main.cpp
 )
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE SKIP_TESTS)
+
 add_executable(
     "${PROJECT_NAME}-test"
     ${SOURCE_FILES}

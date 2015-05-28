@@ -28,7 +28,7 @@ double calculateAScore(const BlastResult &br) {
     assert(br.v_match_start + br.v_input_string.length() > COMMON_AREA_END_POS);
     assert(br.v_match_start <= COMMON_AREA_START_POS);
 
-    assert(br.v_input_string.length() == br.v_match_string.length());
+//    assert(br.v_input_string.length() == br.v_match_string.length());
 
     // TODO: deal with these properly - i.e. ignore them in the
     // 		 mutation count.

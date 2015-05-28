@@ -72,6 +72,7 @@ struct MutationProbabilites {
 extern std::function<seq_t(seq_t, int)> get_penta_nucleotide;
 extern std::function<seq_t(seq_t, int)> get_tri_nucleotide;
 
+RunConfig prepareConfig(int argc, char *pString[]);
 HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input);
 BlastResult parseBlastOutput(const pugi::xpath_node &node);
 

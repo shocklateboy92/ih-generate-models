@@ -1,14 +1,10 @@
 #include "common.h"
 #include "a-score.h"
 #include "mutation-ratios.h"
+#include "init.h"
 
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/numeric.hpp>
-
-
-RunConfig prepareConfig(int argc, char *pString[]);
-
-std::vector<FastaSequence> readRepertoire(const char *);
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -86,34 +82,4 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-RunConfig prepareConfig(int argc, char *argv[]) {
-    return {
-            readRepertoire("IGHJRepertoire.fasta"),
-            readRepertoire("IGHDRepertoire.fasta"),
-            boost::accumulate(
-                    readRepertoire("IGHVRepertoire.fasta"),
-                    seq_map_t(),
-                    [](seq_map_t &map, FastaSequence f) -> seq_map_t & {
-                        map.insert({f.name(), f});
-                        return map;
-                    }
-            ),
-            readMutationProbsFile("Mutation_spectrum.txt")
-    };
-}
 
-std::vector<FastaSequence> readRepertoire(const char *repo_path) {
-    std::vector<FastaSequence> ret;
-    FastaReader fr;
-    std::ifstream is(repo_path);
-    assert(is.is_open());
-
-    fr.toupper(true);
-
-    while (!is.eof()) {
-        auto seq = fr.next(is);
-        ret.push_back(*seq.get());
-    }
-
-    return ret;
-}

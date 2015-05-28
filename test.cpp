@@ -55,14 +55,6 @@ TEST_CASE("testing hotspot mutability score model", "[mutability]") {
     } while (is.good());
 }
 
-TEST_CASE("testing a-score calculation", "[a_score][hide]") {
-    pugi::xml_document doc;
-    assert(doc.load_file("blastOutput.xml"));
-    auto nodes = doc.select_nodes("//BlastOutput/BlastOutput_iterations/Iteration");
-
-    REQUIRE(calculateAScore(parseBlastOutput(nodes[0])) == 0.06);
-}
-
 namespace blast_expected {
     constexpr auto v_match_string = "GAGTCGGGGGGAGGCTGGGTACAGCCTGGCAGGTCCCTGAGACTCTCCTGTTCAGCCTCTGGACTCACCTTTGATGATTATGCCATGCACTGGGTCCGGCAAGCTCCAGGGAAGGGCCTGGAGTGGGTCTCCGGTATTAGTTGGAACAGTGGTGTTAGAGCCTATGCGGACTCTGTGAAGGGCCGATTCACCATCTCCAGAGACAACGGCAAGAATTCCCTGTATCTGCAAATGAACAGTCTGAGACCTGAGGACACGGCCTTGTATTATTGTGCAAAAGATATTCGGGCTGCTACCCCATACGCCCTTGATCACTGGGGCCAGGGAGTCCTGGTCACCGTCTCCTCA";
     constexpr auto v_input_string = "GAGTCTGGGGGAGGCTTGGTACAGCCTGGCAGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTGATGATTATGCCATGCACTGGGTCCGGCAAGCTCCAGGGAAGGGCCTGGAGTGGGTCTCAGGTATTAGTTGGAATAGTGGTAGCATAGGCTATGCGGACTCTGTGAAGGGCCGATTCACCATCTCCAGAGACAACGCCAAGAACTCCCTGTATCTGCAAATGAACAGTCTGAGAGCTGAGGACACGGCCTTGTATTACTGTGCAAAAGATA";
@@ -77,4 +69,18 @@ TEST_CASE("testing blast/parse stage", "[blast][hide]") {
     REQUIRE(br.v_match_start == 15);
     REQUIRE(br.v_match_string == blast_expected::v_match_string);
     REQUIRE(br.v_input_string == blast_expected::v_input_string);
+}
+
+TEST_CASE("testing a-score calculation", "[a_score][hide]") {
+    pugi::xml_document doc;
+    assert(doc.load_file("blastOutput.xml"));
+    auto nodes = doc.select_nodes("//BlastOutput/BlastOutput_iterations/Iteration");
+    BlastResult br = {
+        "test",
+        blast_expected::v_match_string,
+        15,
+        blast_expected::v_input_string
+    };
+
+    REQUIRE(calculateAScore(br) == 0.06);
 }
