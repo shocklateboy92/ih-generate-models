@@ -84,6 +84,7 @@ void createStates(const RunConfig &config, const SequenceInfo &input,
                   probs_list_t start_exo_probs, probs_list_t end_exo_probs,
                   const seq_t &fstr, HiddenMarkovModel &ret)
 {
+    // TODO: abstract this into class
     std::size_t pos_start_no_exo = ret.states.size();
     std::size_t pos_start_exo = pos_start_no_exo + 1;
     std::size_t gene_start = pos_start_exo + 1;
@@ -171,36 +172,86 @@ HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input)
     ret.states = std::vector<StateInfo>(state_pos::end_state);
     ret.transitions = transitions_t(state_pos::end_state);
 
-    // We start at the beginning of V
-    ret.transitions[state_pos::magic] = {
-        {state_pos::end_state, 1}
-    };
+    std::size_t
+            v_start_no_exo = state_pos::end_state,
+            v_start_exo  = v_start_no_exo + 1,
+            v_end_no_exo = v_start_exo + fstr.length() + 1,
+            v_end_exo = v_end_no_exo + 1;
 
     // Now make a state for each NT in the V-Gene
     createStates(config, input, exp_decay_fn, {}, v_end_exo_probs, fstr, ret);
 
+    // We start at the beginning of V
+    ret.transitions[state_pos::magic] = {
+        {state_pos::end_state, 1}
+    };
+    ret.transitions[v_end_no_exo] = {
+        {state_pos::magic, early_exit_prob},
+        {v_end_exo, 1 - early_exit_prob},
+    };
+    ret.transitions[v_end_exo] = {
+        {state_pos::magic, early_exit_prob},
+        {state_pos::n1_start, 1 - early_exit_prob}
+    };
+    ret.transitions[state_pos::n1_start] = {
+        {state_pos::n1_end, 1}
+    };
+
+    assert (ret.states[v_start_no_exo].name == "start_no_exo");
+    assert (ret.states[v_start_exo].name == "start_exo");
+    assert (ret.states[v_end_no_exo].name == "end_no_exo");
+
     // Now, do the same for all possible D-genes
     for (std::size_t i = 0; i < config.d_repo.size(); i++) {
-        createStates(config, input,
-                     [](double i) {
-            return std::exp(EXP_DECAY_INDEX_CONST * i);
-        },
-        d_start_exo_probs.at(i),
-        d_end_exo_probs.at(i),
-        config.d_repo.at(i).c_str(),
-        ret);
+        std::size_t pos_start_no_exo = ret.states.size();
+        std::size_t pos_start_exo = pos_start_no_exo + 1;
+        std::size_t gene_start = pos_start_exo + 1;
+
+        std::size_t pos_end_no_exo = gene_start + config.d_repo.at(i).size();
+        std::size_t pos_end_exo = pos_end_no_exo + 1;
+        std::size_t gene_end = pos_end_no_exo - 1;
+
+        createStates(
+            config,
+            input,
+            [](double i) {return std::exp(EXP_DECAY_INDEX_CONST * i);},
+            d_start_exo_probs.at(i),
+            d_end_exo_probs.at(i),
+            config.d_repo.at(i).c_str(),
+            ret
+        );
+
+        assert (ret.states[pos_start_exo].name == "start_exo");
+        assert (ret.states[pos_end_no_exo].name == "end_no_exo");
+
+        double num_genes = config.d_repo.at(i).size();
+        ret.transitions[state_pos::n1_end] = {
+            {state_pos::magic, early_exit_prob},
+            {pos_start_exo,  (1 - early_exit_prob) / num_genes}
+        };
+
+        ret.transitions[pos_end_no_exo] = {
+            {state_pos::magic, early_exit_prob},
+            {state_pos::n2_start, 1 - early_exit_prob}
+        };
+        ret.transitions[pos_end_exo] = ret.transitions[pos_end_no_exo];
     }
+
+    ret.transitions[state_pos::n2_start] = {
+        {state_pos::n2_end, 1}
+    };
 
     // Now, repeat for all the J genes as well
     for (std::size_t i = 0; i < config.j_repo.size(); i++) {
-        createStates(config, input,
-                     [](double i) {
-            return std::exp(EXP_DECAY_INDEX_CONST * i);
-        },
-        d_start_exo_probs.at(i),
-        d_end_exo_probs.at(i),
-        config.j_repo.at(i).c_str(),
-        ret);
+        createStates(
+            config,
+            input,
+            [](double i) {return std::exp(EXP_DECAY_INDEX_CONST * i);},
+            d_start_exo_probs.at(i),
+            d_end_exo_probs.at(i),
+            config.j_repo.at(i).c_str(),
+            ret
+        );
     }
 
 
