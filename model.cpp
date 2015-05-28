@@ -16,7 +16,7 @@ BlastResult parseBlastOutput(const pugi::xpath_node &node) {
         // The current version of BLAST seems to prepend "lcl|" to Id
         std::string(hit.child_value("Hit_id")).substr(4),
         hsps.child_value("Hsp_hseq"),
-        std::stoul(hsps.child_value("Hsp_hit-from")),
+        std::stoul(hsps.child_value("Hsp_hit-from")) -1,
         hsps.child_value("Hsp_qseq")
     };
 }
@@ -162,7 +162,7 @@ HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input)
             .c_str();
     // But we only care about the V sequence from the start of the aligned region
     std::string fstr = full_v_seq.substr(
-                input.blast_result.v_match_start -1,
+                input.blast_result.v_match_start,
                 full_v_seq.length());
 
     auto exp_decay_fn = [](double i) {return std::exp(EXP_DECAY_INDEX_CONST * i);};
