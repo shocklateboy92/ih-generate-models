@@ -55,7 +55,7 @@ TEST_CASE("testing hotspot mutability score model", "[mutability]") {
     } while (is.good());
 }
 
-TEST_CASE("testing a-score calculation", "[a_score]") {
+TEST_CASE("testing a-score calculation", "[a_score][hide]") {
     pugi::xml_document doc;
     assert(doc.load_file("blastOutput.xml"));
     auto nodes = doc.select_nodes("//BlastOutput/BlastOutput_iterations/Iteration");
@@ -68,7 +68,7 @@ namespace blast_expected {
     constexpr auto v_input_string = "GAGTCTGGGGGAGGCTTGGTACAGCCTGGCAGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTGATGATTATGCCATGCACTGGGTCCGGCAAGCTCCAGGGAAGGGCCTGGAGTGGGTCTCAGGTATTAGTTGGAATAGTGGTAGCATAGGCTATGCGGACTCTGTGAAGGGCCGATTCACCATCTCCAGAGACAACGCCAAGAACTCCCTGTATCTGCAAATGAACAGTCTGAGAGCTGAGGACACGGCCTTGTATTACTGTGCAAAAGATA";
 };
 
-TEST_CASE("testing blast/parse stage", "[blast]") {
+TEST_CASE("testing blast/parse stage", "[blast][hide]") {
     pugi::xml_document doc;
     assert(doc.load_file("blastOutput.xml"));
     auto nodes = doc.select_nodes("//BlastOutput/BlastOutput_iterations/Iteration");
