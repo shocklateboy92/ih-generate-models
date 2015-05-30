@@ -38,11 +38,6 @@ struct StateInfo {
     }
 };
 
-struct HiddenMarkovModel {
-    std::vector<StateInfo> states;
-    transitions_t transitions;
-};
-
 struct RunConfig {
     const std::vector<FastaSequence> j_repo;
     const std::vector<FastaSequence> d_repo;
@@ -63,6 +58,12 @@ struct SequenceInfo {
 
     const BlastResult blast_result;
     const double a_score;
+};
+
+struct HiddenMarkovModel {
+    const SequenceInfo input;
+    std::vector<StateInfo> states;
+    transitions_t transitions;
 };
 
 struct MutationProbabilites {

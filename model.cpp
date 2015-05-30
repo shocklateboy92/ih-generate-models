@@ -92,13 +92,12 @@ void createStates(const RunConfig &config, const SequenceInfo &input,
     std::size_t pos_end_no_exo = gene_start + fstr.size();
     std::size_t pos_end_exo = pos_end_no_exo + 1;
     std::size_t gene_end = pos_end_no_exo - 1;
-
-    ret.states.push_back({"start_no_exo"});
+    ret.states.push_back({"start_no_exo", {1, 1, 1, 1}});
     ret.transitions.push_back({
                                   {state_pos::magic, early_exit_prob},
                                   {gene_start, 1 - early_exit_prob}
                               });
-    ret.states.push_back({"start_exo"});
+    ret.states.push_back({"start_exo", {1, 1, 1, 1}});
     ret.transitions.push_back({
                                   {state_pos::magic, early_exit_prob},
                                   {
@@ -144,8 +143,8 @@ void createStates(const RunConfig &config, const SequenceInfo &input,
         assert(ret.states.size() == ret.transitions.size());
     }
 
-    ret.states.push_back({"end_no_exo"});
-    ret.states.push_back({"end_exo"});
+    ret.states.push_back({"end_no_exo", {1, 1, 1, 1}});
+    ret.states.push_back({"end_exo", {1, 1, 1, 1}});
     assert (ret.states.size() == pos_end_exo + 1);
 
     ret.transitions.push_back({});
@@ -154,7 +153,7 @@ void createStates(const RunConfig &config, const SequenceInfo &input,
 }
 
 HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input) {
-    HiddenMarkovModel ret = {};
+    HiddenMarkovModel ret = {input};
 
     // Use full V_gene from the repertoire, rather
     // than just the aligned segment BLAST spits out
@@ -169,7 +168,11 @@ HiddenMarkovModel buildModel(const RunConfig &config, const SequenceInfo &input)
     auto exp_decay_fn = [](double i) {return std::exp(EXP_DECAY_INDEX_CONST * i);};
 
     // Initialize the transitions with the dot states built in
-    ret.states = std::vector<StateInfo>(state_pos::end_state);
+    ret.states = std::vector<StateInfo>(state_pos::end_state,
+                                        StateInfo {
+                                            "start",
+                                            {1, 1, 1, 1}
+                                        });
     ret.transitions = transitions_t(state_pos::end_state);
 
     std::size_t
@@ -300,16 +303,13 @@ bool check_choke(const HiddenMarkovModel &model, std::size_t cur_state,
     return has_path_out;
 }
 
-TEST_CASE("testing continuity of model", "[transitions]") {
+TEST_CASE("testing continuity of model", "[transitions][long][hide]") {
     RunConfig config = prepareConfig(0, nullptr);
     SequenceInfo input = {
         "test",
         "<future>",
         BlastResult {
-            "IGHV3-9*01(L1)",
-            "GAGTCTGGGGGAGGCTTGGTACAGCCTGGCAGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTGATGATTATGCCATGCACTGGGTCCGGC",
-            15,
-            "GAGTCGGGGGGAGGCTGGGTACAGCCTGGCAGGTCCCTGAGACTCTCCTGTTCAGCCTCTGGACTCACCTTTGATGATTATGCCATGCACTGGGTCCGGC",
+            "IGHV3-9*01(L1)"
         },
         0.06
     };

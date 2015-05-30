@@ -10,6 +10,7 @@ set(SOURCE_FILES
     mutability.cpp
     mock-data.cpp
     init.cpp
+    viterbi.cpp
     )
 
 set(EXTERNAL_SOURCE_FILES

@@ -2,12 +2,14 @@
 #include "a-score.h"
 #include "mutation-ratios.h"
 #include "init.h"
+#include "viterbi.h"
 
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/numeric.hpp>
+#include <vector>
 
 int main(int argc, char *argv[]) {
-    if (argc != 2) {
+    if (argc != 3) {
         std::cerr << "Incorrect Args!" << std::endl;
         return -2;
     }
@@ -29,55 +31,32 @@ int main(int argc, char *argv[]) {
 
     #define BIND_CONFIG(x) std::bind(x, globalConfig, std::placeholders::_1)
 
+    auto i1 = readRepertoire(argv[2]);
+    assert (nodes.size() == i1.size());
+
+    std::vector<std::pair<const pugi::xpath_node&, FastaSequence>> pairs;
+    for (std::size_t i = 0; i < nodes.size(); i++) {
+        pairs.push_back({nodes[i], i1[i]});
+    }
+
     // Parse the Iteration nodes
-    auto r1 = transform(nodes, parseBlastOutput);
-    auto r2 = transform(r1, [](BlastResult result1) -> SequenceInfo {
+    auto r1 = transform(pairs, [](auto b) {return std::make_pair(parseBlastOutput(b.first), b.second);});
+    auto r2 = transform(r1, [](auto b) -> SequenceInfo {
         return {
-                "name",
-                "data",
-                result1,
+                b.second.name(),
+                b.second.c_str(),
+                b.first,
                 // Calculate A Score from Blast Results
-                calculateAScore(result1)
+                calculateAScore(b.first)
         };
     });
     auto r3 = transform(r2, BIND_CONFIG(buildModel));
+    auto r4 = transform(r3, do_viterbi);
 
-    std::ifstream v_probs("v_probs.txt"), v_names("v_names.txt");
-    assert(v_probs.is_open() && v_names.is_open());
-
-    for (auto s : r2) {
-        std::string ev_name;
-        v_names >> ev_name;
-        assert(s.blast_result.v_name == ev_name);
+    for (auto v : r4) {
+        for (auto s : v)
+            std::cout << s.name << std::endl;
     }
-
-    std::size_t matches = 0;
-    double max_diff = 0;
-    for (const HiddenMarkovModel &model : r3) {
-        std::string token;
-        v_probs >> token;
-        assert("Start_Model" == token);
-        assert(v_probs.good());
-        for (auto s : model.states) {
-            if (s.isDotState()) {
-                continue;
-            }
-            for (auto p : s.emission_probs) {
-                assert(v_probs.good());
-                double ep;
-                v_probs >> ep;
-                double diff = p - ep;
-                std::cout << diff << " ";
-                assert (diff < 0.5);
-                if (diff > max_diff) {
-                    max_diff = diff;
-                }
-                matches++;
-            }
-            std::endl(std::cout);
-        }
-    }
-    std::cout << "MAX ERROR = " << max_diff << std::endl;
 
     return 0;
 }
