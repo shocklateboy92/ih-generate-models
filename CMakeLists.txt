@@ -34,6 +34,8 @@ add_executable(
     test.cpp
 )
 
+FIND_PACKAGE( Boost 1.58 REQUIRED )
+
 include_directories(${CMAKE_SOURCE_DIR}/lib)
 #target_include_directories(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/lib)
 
