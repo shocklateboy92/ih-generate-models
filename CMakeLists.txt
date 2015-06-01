@@ -40,3 +40,5 @@ include_directories(${CMAKE_SOURCE_DIR}/lib)
 #target_include_directories(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/lib)
 
 add_definitions("-D__GXX_EXPERIMENTAL_CXX0X__")
+
+set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -ltbb")
