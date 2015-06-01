@@ -7,12 +7,19 @@
 #include <vector>
 #include <tbb/parallel_for.h>
 #include <tbb/concurrent_vector.h>
+#include <tbb/task_scheduler_init.h>
 
 int main(int argc, char *argv[]) {
-    if (argc != 3) {
+    if (argc < 3) {
         std::cerr << "Incorrect Args!" << std::endl;
         return -2;
     }
+
+    auto num_threads = tbb::task_scheduler_init::automatic;
+    if (argc == 4) {
+        num_threads = atoi(argv[3]);
+    }
+    tbb::task_scheduler_init init(num_threads);
 
     const RunConfig &globalConfig = prepareConfig(argc, argv);
     assert(globalConfig.j_repo.size() == 15);
